@@ -1,0 +1,19 @@
+uldso
+-----
+
+Uldso is a light weight dynamic linker for loading ELF binaries using the
+Linux ELF-FDPIC program loader. The ELF-FDPIC loader is generally used on
+non-MMU based Linux systems, although it can be used on some full MMU
+Linux systems as well (for example ARM based systems). The standard ELF
+loader is not available on non-MMU Linux systems.
+
+The Linux ELF-FDPIC loader can actually load some types of ELF binaries.
+Specifically those linked with position independant (PIE) code. Typically
+these PIE generated ELF format binaries do still need run-time dynamic
+linking. uldso is designed to carry out this run-time linking step.
+So typically in is installed as something like /lib/ld.so.1 - in a similar
+fashion to what the usual ELF dynamic linker is installed as.
+
+In keeping with simplicty on non-MMU systems in general uldso is designed
+to be very simple, and thus also very small.
+
