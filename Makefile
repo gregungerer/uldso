@@ -10,6 +10,8 @@ CFLAGS += -D$(ARCH)
 CFLAGS += $(EXTRA_CFLAGS)
 
 LDFLAGS += -Wl,--no-dynamic-linker
+LDFLAGS += -Wl,-z,noexecstack
+LDFLAGS += -Wl,-s
 LDFLAGS += -nostdlib
 
 OBJS = $(ARCH).o linker.o
