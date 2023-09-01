@@ -11,12 +11,11 @@
 .global linker
 
 _start:
-	mov	r4, r0			/* save the _atexit func for later */
 	mov	r0, r7			/* 'mapaddr' for executable */
 	mov	r1, r9			/* 'dynaddr' argument */
 
 	bl	linker			/* relocate it */
 
 	mov	r1, r0			/* program entry address */
-	mov	r0, r4			/* restore _atexit func ptr */
+	ldr	r0, =0			/* restore _atexit func ptr */
 	mov	pc, r1			/* start the program proper */
