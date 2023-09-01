@@ -44,7 +44,7 @@
 /*
  * Abstract away definition differences for the relocation types.
  * We only need to support a small set of common relocation actions,
- * so this make it pretty simple. We define these numbers here to avoid
+ * so this makes it pretty simple. We define these numbers here to avoid
  * any dependency on C-library headers. The kernel uapi headers do not
  * define these numbers (well, at least for some architectures).
  */
@@ -54,13 +54,18 @@
 #endif
 
 #ifdef m68k
-#define RELOCATEA
+#define RELOCATEAA
 #define R_RELATIVE	22 /*R_68K_RELATIVE*/
 #endif
 
 #ifdef riscv
-#define RELOCATEA
+#define RELOCATEAA
 #define R_RELATIVE	3 /*R_RISCV_RELATIVE*/
+#endif
+
+#ifdef xtensa
+#define RELOCATEA
+#define R_RELATIVE	5 /*R_XTENSA_RELATIVE*/
 #endif
 
 /*
@@ -68,22 +73,39 @@
  * sections. The relocation calculation is slightly different, not to
  * mention that the data structures involved are ever so similar but
  * still slightly different. In practice each architecture supports one
- * or the other - but not both.
+ * type only - not all types.
  */
 #ifdef RELOCATE
 #define DT_RELOCATION	DT_REL
 #define DT_RELOCATIONSZ	DT_RELSZ
 #define elf_relocation	elf_rel
+
 static inline void relative(unsigned long loadaddr, struct elf_rel *rel)
 {
 	unsigned long *paddr;
 	paddr = (unsigned long *) (loadaddr + rel->r_offset);
 	*paddr += loadaddr;
 }
-#else
+#endif /* RELOCATE */
+
+#ifdef RELOCATEA
 #define DT_RELOCATION	DT_RELA
 #define DT_RELOCATIONSZ	DT_RELASZ
 #define elf_relocation	elf_rela
+
+static inline void relative(unsigned long loadaddr, struct elf_rela *rela)
+{
+	unsigned long *paddr;
+	paddr = (unsigned long *) (loadaddr + rela->r_offset);
+	*paddr += loadaddr;
+}
+#endif /* RELOCATEA */
+
+#ifdef RELOCATEAA
+#define DT_RELOCATION	DT_RELA
+#define DT_RELOCATIONSZ	DT_RELASZ
+#define elf_relocation	elf_rela
+
 static inline void relative(unsigned long loadaddr, struct elf_rela *rela)
 {
 	unsigned long *paddr;
@@ -92,8 +114,12 @@ static inline void relative(unsigned long loadaddr, struct elf_rela *rela)
 		*paddr = loadaddr + rela->r_addend;
 	}
 }
-#endif
+#endif /* RELOCATEAA */
 
+/*
+ * The PIE style constant displacement binaries appear to end up very
+ * simple.
+ */
 static void relocate(unsigned long loadaddr, struct elf_relocation *rel)
 {
 	unsigned long *paddr;

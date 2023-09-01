@@ -11,9 +11,14 @@ The Linux ELF-FDPIC loader can actually load some types of ELF binaries.
 Specifically those linked with position independant (PIE) code. Typically
 these PIE generated ELF format binaries do still need run-time dynamic
 linking. uldso is designed to carry out this run-time linking step.
-So typically in is installed as something like /lib/ld.so.1 - in a similar
+So typically it is installed as something like /lib/ld.so.1 - in a similar
 fashion to what the usual ELF dynamic linker is installed as.
 
 In keeping with simplicty on non-MMU systems in general uldso is designed
 to be very simple, and thus also very small.
+
+Uldso relies on the fact that the ELF-FDPIC loader sets up a number of
+registers with load map information at process startup. It uses this to
+quickly find the dynamic relocation section and carry out the required
+relocations (which for the PIE case are generally very simple).
 

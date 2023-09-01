@@ -40,7 +40,7 @@ clean:
 help:
 	@echo 'usage: make ARCH=<arch> [clean]'
 	@echo
-	@echo '  ARCH=           - is one of: arm, m68k, riscv'
+	@echo '  ARCH=           - is one of: arm, m68k, riscv, xtensa'
 	@echo '  CROSS_COMPILE=  - cross compiler to use'
 	@echo
 
