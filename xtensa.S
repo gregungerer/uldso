@@ -11,8 +11,7 @@
 .global linker
 
 _start:
-	mov	a10, a4			/* 'mapaddr' for executable */
-	mov	a11, a6			/* 'dynaddr' argument */
+	mov	a10, a1			/* 'sp' value as argument */
 	call8	linker			/* relocate it */
 	jx	a10			/* start the program proper */
 

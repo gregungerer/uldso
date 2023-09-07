@@ -11,8 +11,7 @@
 .global linker
 
 _start:
-	mv	a0, a1			/* 'mapaddr' for executable */
-	mv	a1, a3			/* 'dynaddr' argument */
+	mv	a0, sp			/* start of stack */
 
 	call	linker			/* relocate it */
 

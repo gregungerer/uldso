@@ -17,8 +17,9 @@ fashion to what the usual ELF dynamic linker is installed as.
 In keeping with simplicty on non-MMU systems in general uldso is designed
 to be very simple, and thus also very small.
 
-Uldso relies on the fact that the ELF-FDPIC loader sets up a number of
-registers with load map information at process startup. It uses this to
-quickly find the dynamic relocation section and carry out the required
-relocations (which for the PIE case are generally very simple).
+Uldso does not rely on the ELF-FDPIC register setups, it does traditional
+stack searching and auxilary vector parsing to do its link loading.
+(Earlier versions of uldso did rely on those register setups, but not all
+architectures setup those for the ELF binary case). Generally the relocation
+for PIE style binaries is very simple.
 

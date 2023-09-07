@@ -11,10 +11,9 @@
 .global linker
 
 _start:
-	movel	%d5, %sp@-		/* 'dynaddr' argument */
-	movel	%d3, %sp@-		/* 'mappadr' for executable */
+	movel	%sp, %sp@-		/* 'sp' value as argument */
 	bsr	linker			/* relocate it */
-	addql	#8, %sp
+	addql	#4, %sp
 
 	movel	#0, %a1			/* set _init/_fini parameter NULL */
 	movel	%d0, %a0		/* returned with 'entry' address */

@@ -10,6 +10,7 @@
  * 32-bit or 64-bit structure for word size of the system we are running on.
  */
 #include <linux/elf.h>
+#include <linux/auxvec.h>
 
 #if __SIZEOF_POINTER__ == 8
 #define elf_hdr			elf64_hdr
@@ -38,8 +39,6 @@
 #define elf_fdpic_loadseg	elf32_fdpic_loadseg
 #define elf_fdpic_loadmap	elf32_fdpic_loadmap
 #endif
-
-#include <linux/elf-fdpic.h>
 
 /*
  * Abstract away definition differences for the relocation types.
@@ -131,16 +130,53 @@ static void relocate(unsigned long loadaddr, struct elf_relocation *rel)
 	}
 }
 
-unsigned long linker(struct elf_fdpic_loadmap *map, elf_dynamic *dynp)
+struct auxvec {
+	unsigned long	id;
+	unsigned long	val;
+};
+
+unsigned long linker(unsigned long sp)
 {
-	struct elf_fdpic_loadseg *seg;
 	struct elf_relocation *rel;
 	struct elf_hdr *elfp;
+	struct auxvec *auxp;
+	struct elf_phdr *phdr;
+	elf_dynamic *dynp;
+	unsigned long phdr_addr, phdr_num;
 	unsigned long loadaddr;
-	int i, size;
+	int i, size, argc;
 
-	seg = map->segs;
-	loadaddr = seg->addr;
+	/* Skip over argc count and argv array */
+	argc = *((unsigned int *) sp);
+	sp += (1 + (1 + argc)) * sizeof(unsigned long);
+	/* Skip over env array */
+	for (; *((unsigned long *) sp) != 0; sp += sizeof(unsigned long))
+		;
+	/* Skip over that last NULL as well */
+	sp += sizeof(unsigned long);
+
+	/* Search auxilary vector table for PHDR address */
+	for (auxp = (struct auxvec *) sp, i = 0; i < 64; auxp++, i++) {
+		if (auxp->id == 0)
+			break;
+		if (auxp->id == AT_PHDR)
+			phdr_addr = auxp->val;
+		if (auxp->id == AT_PHNUM)
+			phdr_num = auxp->val;
+	}
+
+	/* Calculate loadaddr */
+	loadaddr = phdr_addr - sizeof(struct elf_hdr);
+
+	/* Search PHDRs for the dynamic section */
+	for (phdr = (struct elf_phdr *) phdr_addr; ; phdr++) {
+		if (phdr->p_type == 0)
+			break;
+		if (phdr->p_type == PT_DYNAMIC) {
+			dynp = (elf_dynamic *) (loadaddr + phdr->p_vaddr);
+			break;
+		}
+	}
 
 	/* Find the .rela.dyn section start and size */
 	for (i = 0; i < 64; i++, dynp++) {

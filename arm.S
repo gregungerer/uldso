@@ -11,13 +11,11 @@
 .global linker
 
 _start:
-	mov	r0, r7			/* 'mapaddr' for executable */
-	mov	r1, r9			/* 'dynaddr' argument */
-
+	mov	r0, sp			/* 'sp' value as argument */
 	bl	linker			/* relocate it */
 
 	mov	r1, r0			/* program entry address */
-	ldr	r0, =0			/* restore _atexit func ptr */
+	ldr	r0, =0			/* NULL _atexit func ptr */
 
 #ifdef ELF_ARGC_ARGV
 	/*
